@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: omnisci
+  name: omnisci
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: omnisci
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: omnisci
+    spec:
+      containers:
+      - name: omnisci 
+        image: omnisci/core-os-cuda:latest
+        volumeMounts:
+        - mountPath: "/omnisci-storage"
+          name: mystor
+        resources:
+          limits:
+            nvidia.com/gpu: 1 
+        ports:
+        - name: api-port
+          containerPort: 6274
+        env:
+          - name: LD_LIBRARY_PATH
+            value: /usr/local/nvidia/lib64:/usr/local/nvidia/bin
+      volumes:
+      - name: mystor
+        nfs:
+          server: singlefs-1-vm
+          path: /data
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: Equal
+        value: "present"
+
